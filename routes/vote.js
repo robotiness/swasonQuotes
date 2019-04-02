@@ -4,7 +4,7 @@ const request = require('request');
 
 //A way to simulate a database only works if the server doesn't restart:
 var ipAlreadyVoted=[];
-router.get('/vote/:id',notVoted,function(req,res){
+router.get('/vote/:id/:score',notVoted,function(req,res){
     res.send("You can vote!!!");
     ipAlreadyVoted.push(getIp(req));
 });
