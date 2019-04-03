@@ -1,28 +1,27 @@
 const express = require("express");
 const router  = express.Router();
 const request = require('request');
+const QuotesModel=require('../models/quotes');
+const uuidv1 = require('uuid/v1');
 
 //Note: 58 Quotes
-var allQuotes=[];
+//var allQuotes=[];
 var singleQuote="";
 router.get('/',function(req,res){
-    console.log(allQuotes);
     res.render('quotes.ejs',{singleQuote:singleQuote});
 });
 
 router.get('/getQuote',function(req,res){
-    request('http://ron-swanson-quotes.herokuapp.com/v2/quotes', function (error, response, body) {
-        var body = JSON.parse(body);
-        singleQuote=body[0];
-        res.redirect('/');
-    });
+
 });
 
 router.get('/getQuote/small',function(req,res){
-    getAllQuotes(request,function(error,result){
+    getAllQuotes(function(error,result){
         if(error){
             console.log(error);
-        }else{
+        }
+        else{
+            console.log(result);
             singleQuote=getSpecifiedWord(result,"SMALL");
             res.redirect('/');
         }
@@ -51,28 +50,54 @@ router.get('/getQuote/large',function(req,res){
     });
 });
 
-function getAllQuotes(request,callback){
-    request('http://ron-swanson-quotes.herokuapp.com/v2/quotes/58', function(error, response, body){
-        if(error){
-            callback(error);
-        }else{
-            var body = JSON.parse(body);
-            callback(null,body);
+function getAllQuotes(callback)
+{
+    QuotesModel.findOne({},function(err,result){
+        if(result.quotes.length)
+        {
+            console.log(result.quotes.length);
+            callback(null,result.quotes)
         }
+        else{
+            request('http://ron-swanson-quotes.herokuapp.com/v2/quotes/58', function(error, response, body){
+                if(error){
+                    callback(error);
+                }else{
+                    var body = JSON.parse(body);
+                    var wordCountObj=getWordCount(body);
+                    var newQuoteArr=[];
+                    for(var i=0;i<wordCountObj.length;++i)
+                    {
+                        var id=uuidv1();
+                        var newQuote={
+                            quote:wordCountObj[i].quote,
+                            wordCount:wordCountObj[i].wordCount,
+                            votes:0,
+                            id:id,
+                        }
+                        newQuoteArr.push(newQuote);
+                    }
+                    var quoteObject=new QuotesModel({
+                        quotes:newQuoteArr
+                    });
+                    quoteObject.save(function(err,result){
+                        if(error)
+                        {
+                            console.log(err);
+                        }
+                        else{
+                            console.log("Saved to database");
+                            //console.log(result.quotes);
+                            callback(null,newQuoteArr);
+                        }
+                    });
+                }
+            });
+        }
+        
     });
 }
-function findQuoteByWordCount(quotes,count)
-{
-    console.log("Word that were found by num:"+count+"===============\n");
-    for(var i=0;i<quotes.length;++i)
-    {
-        if(count==quotes[i].wordCount)
-        {
-            console.log(quotes[i]);
-        }
-    }
-    console.log("END===============================\n");
-}
+
 function getWordCount(quotes)
 {
     var array=[];
@@ -87,15 +112,11 @@ function getWordCount(quotes)
             quote:quotes[i],
             wordCount:wordCount
         });
-        allQuotes.push({
-            quote:quotes[i],
-            wordCount:wordCount,
-            vote:0
-        });
     }
-    //findQuoteByWordCount(array,4);
+
     return array;
 }
+
 function getSpecifiedWord(quotes,option){
     //default is LARGE
     var minLength=13;
@@ -111,7 +132,6 @@ function getSpecifiedWord(quotes,option){
         minLength=5;
         maxLength=12;
     }
-    var quotes=getWordCount(quotes);
     for(var i=0;i<quotes.length;++i)
     {
         if(quotes[i].wordCount>=minLength && quotes[i].wordCount<=maxLength)
