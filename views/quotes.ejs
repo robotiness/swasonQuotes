@@ -1,10 +1,25 @@
 <h1>Ron Swanson Quote Generator!</h1>
 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC3c70LqozQb61NaBhuTmJ4-MPkCWEsaNytwDuRky792NRpHyU">
+<hr>
 <a href="http://localhost:3000/getQuote"><button>Get Quote</button></a>
 <a href="http://localhost:3000/getQuote/small"><button>Get Small Quote</button></a>
 <a href="http://localhost:3000/getQuote/medium"><button>Get medium Quote</button></a>
 <a href="http://localhost:3000/getQuote/large"><button>Get large Quote</button></a>
-<%if(singleQuote){%>
-    <h1><%=singleQuote%></h1>
+<%if(quoteObject.quote){%>
+    <h1>Quote: <%=quoteObject.quote%></h1>
+    <h2>Vote:</h2>
+    <a href="/vote/<%-quoteObject.id%>/1"><button>1</button></a>
+    <a href="/vote/<%-quoteObject.id%>/2"><button>2</button></a>
+    <a href="/vote/<%-quoteObject.id%>/3"><button>3</button></a>
+    <a href="/vote/<%-quoteObject.id%>/4"><button>4</button></a>
+    <a href="/vote/<%-quoteObject.id%>/5"><button>5</button></a>
 <%}%>
+<hr>
 <h1>Average Rating of Each Quote</h1>
+<%if(allQuotes){%>
+    <%for(var i=0;i<allQuotes.length;++i){%>
+        <h2 style="color:green;"><%=allQuotes[i].quote%></h2>
+        <h2>Average Score:</h2>
+        <h2 style="color:yellow;"><%=allQuotes[i].averageScore%></h2>
+    <%}%>
+<%}%>

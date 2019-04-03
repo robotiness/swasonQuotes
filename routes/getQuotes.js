@@ -6,13 +6,30 @@ const uuidv1 = require('uuid/v1');
 
 //Note: 58 Quotes
 //var allQuotes=[];
-var singleQuote="";
+var quoteObject={
+    quote:"",
+    wordCount:0,
+    score:0,
+    numOfVotes:0,
+    averageScore:0,
+    id:""
+};
 router.get('/',function(req,res){
-    res.render('quotes.ejs',{singleQuote:singleQuote});
+    var allQuotes=null;
+    QuotesModel.findOne({},function(error,result){
+        if(result)
+        {
+            allQuotes=result.quotes;
+        }
+        res.render('quotes.ejs',{quoteObject:quoteObject,allQuotes:allQuotes});
+    });
 });
 
 router.get('/getQuote',function(req,res){
-
+    getAllQuotes(function(error,result){
+        quoteObject=result[Math.floor(Math.random()*result.length)];
+        res.redirect('/');
+    });
 });
 
 router.get('/getQuote/small',function(req,res){
@@ -21,30 +38,29 @@ router.get('/getQuote/small',function(req,res){
             console.log(error);
         }
         else{
-            console.log(result);
-            singleQuote=getSpecifiedWord(result,"SMALL");
+            quoteObject=getSpecifiedWord(result,"SMALL");
             res.redirect('/');
         }
     });
 });
 
 router.get('/getQuote/medium',function(req,res){
-    getAllQuotes(request,function(error,result){
+    getAllQuotes(function(error,result){
         if(error){
             console.log(error);
         }else{
-            singleQuote=getSpecifiedWord(result,"MEDIUM");
+            quoteObject=getSpecifiedWord(result,"MEDIUM");
             res.redirect('/');
         }
     });
 });
 
 router.get('/getQuote/large',function(req,res){
-    getAllQuotes(request,function(error,result){
+    getAllQuotes(function(error,result){
         if(error){
             console.log(error);
         }else{
-            singleQuote=getSpecifiedWord(result,"LARGE");
+            quoteObject=getSpecifiedWord(result,"LARGE");
             res.redirect('/');
         }
     });
@@ -53,9 +69,8 @@ router.get('/getQuote/large',function(req,res){
 function getAllQuotes(callback)
 {
     QuotesModel.findOne({},function(err,result){
-        if(result.quotes.length)
+        if(result)
         {
-            console.log(result.quotes.length);
             callback(null,result.quotes)
         }
         else{
@@ -72,7 +87,9 @@ function getAllQuotes(callback)
                         var newQuote={
                             quote:wordCountObj[i].quote,
                             wordCount:wordCountObj[i].wordCount,
-                            votes:0,
+                            totalScore:0,
+                            numOfVotes:0,
+                            averageScore:0,
                             id:id,
                         }
                         newQuoteArr.push(newQuote);
@@ -140,6 +157,6 @@ function getSpecifiedWord(quotes,option){
         }
     }
     var item = array[Math.floor(Math.random()*array.length)];
-    return item.quote;
+    return item;
 }
 module.exports = router;
