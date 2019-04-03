@@ -12,7 +12,10 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 mongoose.connect(mongoKey);
 app.use(quotesModule,voteModule);
-
+if(process.env.port)
+{
+    PORT=process.env.port;
+}
 app.listen(PORT,function(req,res){
     console.log("Listening on port"+PORT);
 });
