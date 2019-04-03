@@ -5,15 +5,11 @@ var voteModule=require('./routes/vote');
 var mongoose=require('mongoose');
 var path=require('path');
 var app=express();
-var PORT=require('./config').PORT;
+//var PORT=require('./config').PORT;
 //var mongoKey=require('./config').MONGODB_KEY;
+var PORT=process.env.port;
+var mongoKey=process.env.MONGODB_KEY;
 
-if(process.env.port)
-{
-    PORT=process.env.port;
-    mongoKey=process.env.MONGODB_KEY;
-
-}
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 mongoose.connect(mongoKey);
